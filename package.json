@@ -1,6 +1,6 @@
 {
   "name": "klearsky",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "private": true,
   "scripts": {
     "dev": "vite --mode development",
@@ -17,6 +17,8 @@
   "type": "module",
   "dependencies": {
     "@atproto/api": "^0.17.7",
+    "@tensorflow-models/toxicity": "^1.2.2",
+    "@tensorflow/tfjs": "^4.22.0",
     "@vueuse/core": "^10.11.1",
     "browser-image-compression": "^2.0.2",
     "crypto-js": "^4.2.0",
@@ -29,6 +31,7 @@
     "jwt-decode": "^4.0.0",
     "portal-vue": "^3.0.0",
     "the-new-css-reset": "^1.11.3",
+    "uuid": "^13.0.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
