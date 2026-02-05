@@ -64,9 +64,10 @@ const isIntercepting = ref(false);
 // ===       LOGGING HELPER                              ===
 // =========================================================
 
-function logPostAction(action: string, includeText: boolean = false, includeDid: boolean = false) {
+function logPostAction(action: string, includeText: boolean = false, includeUri: boolean = false, uri?: string) {
   const timestamp = new Date().toISOString();
   const logData: any = {
+    user_did: mainState.atp.session?.did || "unknown_user",
     uuid: sessionUUID.value,
     action: action,
     timestamp: timestamp
@@ -76,11 +77,15 @@ function logPostAction(action: string, includeText: boolean = false, includeDid:
     logData.text = easyFormState.text;
   }
 
-  if (includeDid) {
-    logData.did = mainState.atp.session?.did || "unknown_user";
+  if (includeUri) {
+    logData.uri = uri ?? props.post?.uri ?? "";
   }
 
-  console.log(JSON.stringify(logData, null, 2));
+  fetch("http://127.0.0.1:8081/log_activity", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(logData),
+  }).catch(() => {});
 }
 
 // Debounced version for textModified in watcher
@@ -120,7 +125,7 @@ async function logActivityToBackend(actionType: string, metaData: any = {}, over
       ...parentData
     };
 
-    await fetch('http://localhost:8000/log_activity', {
+    await fetch('http://127.0.0.1:8000/log_activity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -139,7 +144,7 @@ async function logActivityToBackend(actionType: string, metaData: any = {}, over
 
 function sendBeaconLog(actionType: string, metaData: any) {
   const userDid = mainState.atp.session?.did || "unknown_user";
-  const url = 'http://localhost:8000/log_activity';
+  const url = 'http://127.0.0.1:8000/log_activity';
   
   const body = {
         user_did: userDid,
@@ -450,9 +455,6 @@ async function interceptSubmit() {
 }
 
 async function executeActualSubmit() {
-  // Log send action with text and DID
-  logPostAction("send", true, true);
-  
   const videoSizes = (easyForm.value?.getVideoSizes() ?? [[]])[0]
   easyFormState.medias.forEach((media, index) => {
     (media as any)._videoAspectRatio = videoSizes[index]
@@ -485,6 +487,9 @@ async function executeActualSubmit() {
       // FIX: Pass dataToSubmit.text to logger explicitly
       logActivityToBackend("POST_SUBMISSION_FAILED", { error: result.message, popup_session_id: sessionForSubmit }, dataToSubmit.text);
     } else {
+      // Log send action with text and URI
+      logPostAction("send", true, true, result.uri);
+
       // FIX: Pass dataToSubmit.text to logger explicitly
       await logActivityToBackend("POST_PUBLISHED", { 
           final_mode: moderationMode.value || "STANDARD",
