@@ -125,7 +125,7 @@ async function logActivityToBackend(actionType: string, metaData: any = {}, over
       ...parentData
     };
 
-    await fetch('http://127.0.0.1:8000/log_activity', {
+    await fetch('http://localhost:8000/log_activity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -144,7 +144,7 @@ async function logActivityToBackend(actionType: string, metaData: any = {}, over
 
 function sendBeaconLog(actionType: string, metaData: any) {
   const userDid = mainState.atp.session?.did || "unknown_user";
-  const url = 'http://127.0.0.1:8000/log_activity';
+  const url = 'http://localhost:8000/log_activity';
   
   const body = {
         user_did: userDid,
